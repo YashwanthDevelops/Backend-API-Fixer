@@ -13,20 +13,35 @@ export interface FailureObservation {
   requestId: string;
 }
 
-export function createApp(options: { data?: DemoData; onError?: (failure: FailureObservation) => void } = {}) {
+export function createApp(
+  options: { data?: DemoData; onError?: (failure: FailureObservation) => void } = {},
+) {
   const app = express();
   const data = options.data ?? demoData;
   app.disable('x-powered-by');
   app.use(express.json({ limit: '8kb' }));
-  app.get('/health', (_request, response) => { response.json({ ok: true }); });
-  app.get('/users/:id', (request, response) => { getUser(data, request, response); });
+  app.get('/health', (_request, response) => {
+    response.json({ ok: true });
+  });
+  app.get('/users/:id', (request, response) => {
+    getUser(data, request, response);
+  });
   app.post('/orders', createOrder);
-  app.get('/cart/:id/total', (request, response) => { getCartTotal(data, request, response); });
+  app.get('/cart/:id/total', (request, response) => {
+    getCartTotal(data, request, response);
+  });
   const errors: ErrorRequestHandler = (failure: unknown, request, response, _next) => {
     const error = failure instanceof Error ? failure : new Error('Unknown application error');
     try {
-      options.onError?.({ error, method: request.method, routeTemplate: typeof request.route?.path === 'string' ? request.route.path : '/unknown', requestId: randomUUID() });
-    } catch { /* The transport callback cannot affect the response. */ }
+      options.onError?.({
+        error,
+        method: request.method,
+        routeTemplate: typeof request.route?.path === 'string' ? request.route.path : '/unknown',
+        requestId: randomUUID(),
+      });
+    } catch {
+      /* The transport callback cannot affect the response. */
+    }
     response.status(500).json({ error: { code: 'INTERNAL_ERROR' } });
   };
   app.use(errors);
