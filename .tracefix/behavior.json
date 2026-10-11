@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "profile": "express-ts-vitest-v1",
+  "cases": [
+    { "id": "users-missing-404", "fixture_id": "users-missing", "method": "GET", "path": "/users/missing", "expected_status": 404, "expected_body": { "error": { "code": "USER_NOT_FOUND" } }, "description": "A user lookup without a match returns an explicit missing-user response." },
+    { "id": "users-existing-200", "fixture_id": "users-existing", "method": "GET", "path": "/users/u-1", "expected_status": 200, "expected_body": { "id": "u-1", "name": "Avery Demo", "email": "avery@example.test" }, "description": "Existing public-user behavior is preserved." },
+    { "id": "orders-invalid-400", "fixture_id": "orders-invalid", "method": "POST", "path": "/orders", "body": { "quantity": -2 }, "expected_status": 400, "expected_body": { "error": { "code": "INVALID_QUANTITY" } }, "description": "Quantity is a strictly positive integer." },
+    { "id": "cart-multiple-total", "fixture_id": "cart-multiple", "method": "GET", "path": "/cart/cart-1/total", "expected_status": 200, "expected_body": { "total_cents": 4000 }, "description": "Each integer unit price is multiplied by its quantity before summing." }
+  ]
+}
