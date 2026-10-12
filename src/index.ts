@@ -1,6 +1,7 @@
 import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { createApp } from './app.js';
+import type { AssertionObservation } from './contract-monitor.js';
 import { EventEmitter, makeFailureEvent } from './telemetry.js';
 
 const root = fileURLToPath(new URL('../..', import.meta.url));
@@ -28,6 +29,20 @@ const app = createApp({
         routeTemplate: failure.routeTemplate,
         requestId: failure.requestId,
         ...(failure.routeTemplate === '/users/:id' ? { fixtureId: 'users-missing' } : {}),
+      }),
+    );
+  },
+  onAssertion: (failure: AssertionObservation) => {
+    emitter?.enqueue(
+      makeFailureEvent(failure.error, {
+        commitSha,
+        repositoryRoot: root,
+        method: failure.method,
+        routeTemplate: failure.routeTemplate,
+        requestId: failure.requestId,
+        fixtureId: failure.fixtureId,
+        contractCaseId: failure.contractCaseId,
+        kind: 'assertion_failure',
       }),
     );
   },

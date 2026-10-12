@@ -55,6 +55,8 @@ export function makeFailureEvent(
     routeTemplate: string;
     requestId?: string;
     fixtureId?: string;
+    contractCaseId?: string;
+    kind?: FailureEvent['error']['kind'];
   },
 ): FailureEvent {
   if (!/^[a-f0-9]{40}$/.test(input.commitSha)) throw new Error('Exact deployed Git SHA required');
@@ -70,9 +72,10 @@ export function makeFailureEvent(
       route_template: input.routeTemplate,
       request_id: input.requestId ?? randomUUID(),
       ...(input.fixtureId ? { fixture_id: input.fixtureId } : {}),
+      ...(input.contractCaseId ? { contract_case_id: input.contractCaseId } : {}),
     },
     error: {
-      kind: 'exception',
+      kind: input.kind ?? 'exception',
       name: error.name,
       message: error.message.slice(0, 2048),
       frames: sourceFrames(error, input.repositoryRoot),

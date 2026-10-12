@@ -5,6 +5,7 @@ import type { DemoData } from './types.js';
 import { getUser } from './controllers/users.js';
 import { createOrder } from './controllers/orders.js';
 import { getCartTotal } from './controllers/cart.js';
+import { assertionMonitor, type AssertionObservation } from './contract-monitor.js';
 
 export interface FailureObservation {
   error: Error;
@@ -14,12 +15,17 @@ export interface FailureObservation {
 }
 
 export function createApp(
-  options: { data?: DemoData; onError?: (failure: FailureObservation) => void } = {},
+  options: {
+    data?: DemoData;
+    onError?: (failure: FailureObservation) => void;
+    onAssertion?: (failure: AssertionObservation) => void;
+  } = {},
 ) {
   const app = express();
   const data = options.data ?? demoData;
   app.disable('x-powered-by');
   app.use(express.json({ limit: '8kb' }));
+  app.use(assertionMonitor(options.onAssertion));
   app.get('/health', (_request, response) => {
     response.json({ ok: true });
   });
